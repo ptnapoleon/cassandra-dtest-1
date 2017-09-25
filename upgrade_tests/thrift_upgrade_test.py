@@ -22,24 +22,26 @@ def _create_dense_super_cf(name):
     return Cassandra.CfDef('ks', name, column_type='Super',
                            key_validation_class='AsciiType',     # pk
                            comparator_type='AsciiType',          # ck
-                           default_validation_class='AsciiType', # SC value
+                           default_validation_class='AsciiType',  # SC value
                            subcomparator_type='LongType')        # SC key
+
 
 def _validate_sparse_cql(cursor, cf='sparse_super_1', column1=u'column1', col1=u'col1', col2=u'col2', key='key'):
     cursor.execute('use ks')
 
     assert_equal(list(cursor.execute("SELECT * FROM {}".format(cf))),
-                 [{ key: 'k1', column1: 'key1', col1: 200, col2: 300 },
-                  { key: 'k1', column1: 'key2', col1: 200, col2: 300 },
-                  { key: 'k2', column1: 'key1', col1: 200, col2: 300 },
-                  { key: 'k2', column1: 'key2', col1: 200, col2: 300 }])
+                 [{key: 'k1', column1: 'key1', col1: 200, col2: 300},
+                  {key: 'k1', column1: 'key2', col1: 200, col2: 300},
+                  {key: 'k2', column1: 'key1', col1: 200, col2: 300},
+                  {key: 'k2', column1: 'key2', col1: 200, col2: 300}])
 
     assert_equal(list(cursor.execute("SELECT * FROM {} WHERE {} = textAsBlob('k1')".format(cf, key))),
-                 [{ key: 'k1', column1: 'key1', col1: 200, col2: 300 },
-                  { key: 'k1', column1: 'key2', col1: 200, col2: 300 }])
+                 [{key: 'k1', column1: 'key1', col1: 200, col2: 300},
+                  {key: 'k1', column1: 'key2', col1: 200, col2: 300}])
 
     assert_equal(list(cursor.execute("SELECT * FROM {} WHERE {} = textAsBlob('k2') AND {} = textAsBlob('key1')".format(cf, key, column1))),
-                 [{ key: 'k2', column1: 'key1', col1: 200, col2: 300 }])
+                 [{key: 'k2', column1: 'key1', col1: 200, col2: 300}])
+
 
 def _validate_sparse_thrift(client, cf='sparse_super_1'):
     client.transport.open()
@@ -57,24 +59,26 @@ def _validate_sparse_thrift(client, cf='sparse_super_1'):
         assert_equal(cosc.super_column.columns[2].name, 'value1')
         assert_equal(cosc.super_column.columns[2].value, _i64(100))
 
+
 def _validate_dense_cql(cursor, cf='dense_super_1', key=u'key', column1=u'column1', column2=u'column2', value=u'value'):
     cursor.execute('use ks')
 
     assert_equal(list(cursor.execute("SELECT * FROM {}".format(cf))),
-                [{ key: 'k1', column1: 'key1', column2: 100, value: 'value1'},
-                 { key: 'k1', column1: 'key2', column2: 100, value: 'value1'},
-                 { key: 'k2', column1: 'key1', column2: 200, value: 'value2'},
-                 { key: 'k2', column1: 'key2', column2: 200, value: 'value2'}])
+                 [{key: 'k1', column1: 'key1', column2: 100, value: 'value1'},
+                  {key: 'k1', column1: 'key2', column2: 100, value: 'value1'},
+                  {key: 'k2', column1: 'key1', column2: 200, value: 'value2'},
+                  {key: 'k2', column1: 'key2', column2: 200, value: 'value2'}])
 
     assert_equal(list(cursor.execute("SELECT * FROM {} WHERE {} = 'k1'".format(cf, key))),
-                [{ key: 'k1', column1: 'key1', column2: 100, value: 'value1'},
-                 { key: 'k1', column1: 'key2', column2: 100, value: 'value1'}])
+                 [{key: 'k1', column1: 'key1', column2: 100, value: 'value1'},
+                  {key: 'k1', column1: 'key2', column2: 100, value: 'value1'}])
 
     assert_equal(list(cursor.execute("SELECT * FROM {} WHERE {} = 'k1' AND {} = 'key1'".format(cf, key, column1))),
-                [{ key: 'k1', column1: 'key1', column2: 100, value: 'value1'}])
+                 [{key: 'k1', column1: 'key1', column2: 100, value: 'value1'}])
 
     assert_equal(list(cursor.execute("SELECT * FROM {} WHERE {} = 'k1' AND {} = 'key1' AND {} = 100".format(cf, key, column1, column2))),
-                 [{ key: 'k1', column1: 'key1', column2: 100, value: 'value1'}])
+                 [{key: 'k1', column1: 'key1', column2: 100, value: 'value1'}])
+
 
 def _validate_dense_thrift(client, cf='dense_super_1'):
     client.transport.open()
@@ -253,6 +257,7 @@ class UpgradeSuperColumnsThrough(Tester):
         _validate_sparse_thrift(client, cf='sparse_super_2')
         _validate_sparse_cql(cursor, cf='sparse_super_2')
 
+
 @since('2.1', max_version='4.0.0')
 class TestThrift(UpgradeTester):
     """
@@ -261,6 +266,7 @@ class TestThrift(UpgradeTester):
 
     @jira_ticket CASSANDRA-12373
     """
+
     def dense_supercolumn_test(self):
         cursor = self.prepare(nodes=2, rf=2, row_factory=dict_factory)
         cluster = self.cluster
@@ -395,6 +401,7 @@ class TestThrift(UpgradeTester):
             client = get_thrift_client(host, port)
             _validate_sparse_thrift(client, cf='sparse_super_2')
             _validate_sparse_cql(cursor, cf='sparse_super_2')
+
 
 topology_specs = [
     {'NODES': 3,
