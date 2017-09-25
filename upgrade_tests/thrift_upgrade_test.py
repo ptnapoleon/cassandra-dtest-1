@@ -118,7 +118,7 @@ class UpgradeSuperColumnsThrough(Tester):
             node.start(wait_other_notice=True, wait_for_binary_proto=True)
             node.nodetool('upgradesstables -a')
 
-    def prepare(self, num_nodes=1, cassandra_version="git:cassandra-2.2"):
+    def prepare(self, num_nodes=1, cassandra_version="github:apache/cassandra-2.2"):
         cluster = self.cluster
 
         # Forcing cluster version on purpose
@@ -132,7 +132,7 @@ class UpgradeSuperColumnsThrough(Tester):
         return cluster
 
     def dense_supercolumn_3_0_created_test(self):
-        cluster = self.prepare(cassandra_version='git:cassandra-3.0')
+        cluster = self.prepare(cassandra_version='github:apache/cassandra-3.0')
         node = self.cluster.nodelist()[0]
         cursor = self.patient_cql_connection(node, row_factory=dict_factory)
 
@@ -186,9 +186,7 @@ class UpgradeSuperColumnsThrough(Tester):
         _validate_dense_thrift(client, cf='dense_super_1')
         _validate_dense_cql(cursor, cf='dense_super_1')
 
-        self.upgrade_to_version('git:cassandra-3.0')
-
-        # node.nodetool("enablethrift")
+        self.upgrade_to_version('github:apache/cassandra-3.0')
 
         cursor = self.patient_cql_connection(node, row_factory=dict_factory)
         client = get_thrift_client(host, port)
@@ -237,9 +235,7 @@ class UpgradeSuperColumnsThrough(Tester):
         _validate_sparse_thrift(client, cf='sparse_super_2')
         _validate_sparse_cql(cursor, cf='sparse_super_2')
 
-        self.upgrade_to_version('git:cassandra-3.0')
-
-        # node.nodetool("enablethrift")
+        self.upgrade_to_version('github:apache/cassandra-3.0')
 
         cursor = self.patient_cql_connection(node, row_factory=dict_factory)
         client = get_thrift_client(host, port)
