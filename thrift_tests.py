@@ -8,6 +8,7 @@ from thrift.protocol import TBinaryProtocol
 from thrift.Thrift import TApplicationException
 from thrift.transport import TSocket, TTransport
 
+from tools.assertions import assert_length_equal
 from dtest import (CASSANDRA_VERSION_FROM_BUILD, DISABLE_VNODES, NUM_TOKENS,
                    ReusableClusterTester, debug, init_default_config)
 from thrift_bindings.v22 import Cassandra
@@ -1299,11 +1300,11 @@ class TestMutations(ThriftTester):
 
         p = SlicePredicate(slice_range=SliceRange('sc1', 'sc2', False, 2))
         result = client.get_slice('key1', ColumnParent('Super1'), p, ConsistencyLevel.ONE)
-        assert len(result) == 2
-        assert result[0].super_column.name == 'sc1'
-        assert result[0].super_column.columns[0] == Column(_i64(4), 'value4', 1234)
-        assert result[1].super_column.name == 'sc2'
-        assert result[1].super_column.columns == [Column(_i64(5), 'value5', 1234), Column(_i64(6), 'value6', 1234)]
+        assert_length_equal(result, 2)
+        self.assertEqual(result[0].super_column.name, 'sc1')
+        self.assertEqual(result[0].super_column.columns[0], Column(_i64(4), 'value4', 1234))
+        self.assertEqual(result[1].super_column.name, 'sc2')
+        self.assertEqual(result[1].super_column.columns, [Column(_i64(5), 'value5', 1234), Column(_i64(6), 'value6', 1234)])
 
     def test_range_with_remove(self):
         _set_keyspace('Keyspace1')

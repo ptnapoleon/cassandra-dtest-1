@@ -12,6 +12,7 @@ from thrift_bindings.v22.Cassandra import (Column, ColumnDef,
                                            ColumnParent, ConsistencyLevel,
                                            SlicePredicate, SliceRange)
 from thrift_tests import _i64, get_thrift_client
+from tools.assertions import assert_length_equal
 from tools.decorators import since
 from upgrade_base import UpgradeTester
 from upgrade_manifest import build_upgrade_pairs
@@ -44,17 +45,17 @@ def _validate_sparse_thrift(client, cf='sparse_super_1'):
     client.transport.open()
     client.set_keyspace('ks')
     result = client.get_slice('k1', ColumnParent(cf), SlicePredicate(slice_range=SliceRange('', '', False, 5)), ConsistencyLevel.ONE)
-    assert len(result) == 2
-    assert result[0].super_column.name == 'key1'
-    assert result[1].super_column.name == 'key2'
+    assert_length_equal(result, 2)
+    assert_equal(result[0].super_column.name, 'key1')
+    assert_equal(result[1].super_column.name, 'key2')
 
     for cosc in result:
-        assert cosc.super_column.columns[0].name == 'col1'
-        assert cosc.super_column.columns[0].value == _i64(200)
-        assert cosc.super_column.columns[1].name == 'col2'
-        assert cosc.super_column.columns[1].value == _i64(300)
-        assert cosc.super_column.columns[2].name == 'value1'
-        assert cosc.super_column.columns[2].value == _i64(100)
+        assert_equal(cosc.super_column.columns[0].name, 'col1')
+        assert_equal(cosc.super_column.columns[0].value, _i64(200))
+        assert_equal(cosc.super_column.columns[1].name, 'col2')
+        assert_equal(cosc.super_column.columns[1].value, _i64(300))
+        assert_equal(cosc.super_column.columns[2].name, 'value1')
+        assert_equal(cosc.super_column.columns[2].value, _i64(100))
 
 def _validate_dense_cql(cursor, cf='dense_super_1', key=u'key', column1=u'column1', column2=u'column2', value=u'value'):
     cursor.execute('use ks')
@@ -79,15 +80,15 @@ def _validate_dense_thrift(client, cf='dense_super_1'):
     client.transport.open()
     client.set_keyspace('ks')
     result = client.get_slice('k1', ColumnParent(cf), SlicePredicate(slice_range=SliceRange('', '', False, 5)), ConsistencyLevel.ONE)
-    assert len(result) == 2
-    assert result[0].super_column.name == 'key1'
-    assert result[1].super_column.name == 'key2'
+    assert_length_equal(result, 2)
+    assert_equal(result[0].super_column.name, 'key1')
+    assert_equal(result[1].super_column.name, 'key2')
 
     print(result[0])
     print(result[1])
     for cosc in result:
-        assert cosc.super_column.columns[0].name == _i64(100)
-        assert cosc.super_column.columns[0].value == 'value1'
+        assert_equal(cosc.super_column.columns[0].name, _i64(100))
+        assert_equal(cosc.super_column.columns[0].value, 'value1')
 
 
 class UpgradeSuperColumnsThrough(Tester):
@@ -256,7 +257,7 @@ class UpgradeSuperColumnsThrough(Tester):
         _validate_sparse_thrift(client, cf='sparse_super_2')
         _validate_sparse_cql(cursor, cf='sparse_super_2')
 
-@since('2.1', max_version='4.0.x')
+@since('2.1', max_version='4.0.0')
 class TestThrift(UpgradeTester):
     """
     Verify dense and sparse supercolumn functionality with and without renamed columns
