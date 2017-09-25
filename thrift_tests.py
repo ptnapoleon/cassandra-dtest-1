@@ -22,8 +22,8 @@ from thrift_bindings.v22.Cassandra import (CfDef, Column, ColumnDef,
                                            Mutation, NotFoundException,
                                            SlicePredicate, SliceRange,
                                            SuperColumn)
-from tools.assertions import assert_none, assert_one, assert_all
-from tools.decorators import known_failure, since
+from tools.assertions import assert_all, assert_none, assert_one
+from tools.decorators import since
 
 
 def get_thrift_client(host='127.0.0.1', port=9160):
